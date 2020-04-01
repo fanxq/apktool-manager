@@ -1,6 +1,8 @@
 {
   "name": "apktool-manager",
   "version": "0.1.0",
+  "description": "a management GUI for apktool",
+  "author": "fanxq",
   "private": true,
   "main": "main.js",
   "type": "module",
@@ -9,7 +11,41 @@
     "build": "vue-cli-service build",
     "start": "npm run build && electron .",
     "dev": "set NODE_ENV=development&& electron .",
-    "postinstall": "install-app-deps"
+    "pack": "npm run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps",
+    "install": "set ELECTRON_MIRROR=http://npm.taobao.org/mirrors/electron/&&  node ./node_modules/electron/install.js"
+  },
+  "build": {
+    "appId": "com.apktool.manager",
+    "productName": "ApktoolManager",
+    "directories": {
+      "output": "build"
+    },
+    "asar": false,
+    "files": [
+      "dist/**/*",
+      "database.js",
+      "ipcMainHandler.js",
+      "main.js",
+      "package.json",
+      "assets/**/*"
+    ],
+    "npmRebuild": false,
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Apktool Mananger"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis"
+        }
+      ]
+    }
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
@@ -17,7 +53,6 @@
     "@fortawesome/vue-fontawesome": "^0.1.9",
     "core-js": "^3.4.3",
     "dayjs": "^1.8.23",
-    "electron": "^7.1.14",
     "imageinfo": "^1.0.4",
     "rimraf": "^3.0.0",
     "sequelize": "^5.21.5",
@@ -33,6 +68,7 @@
     "@vue/cli-plugin-vuex": "^4.1.0",
     "@vue/cli-service": "^4.2.3",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "electron": "^6.0.0",
     "electron-builder": "^22.3.6",
     "node-sass": "^4.12.0",
     "sass-loader": "^8.0.0",
