@@ -74,10 +74,12 @@ export default new Vuex.Store({
     async addDecompileTask({
       commit
     }, task) {
-      let decompileTask = await ipcRenderer.invoke('add-decompile-task', task);
-      decompileTask.type = 'decompile';
-      commit('addTask', decompileTask);
-      return decompileTask;
+      let result = await ipcRenderer.invoke('add-decompile-task', task);
+      if (result && result.id) {
+        result.type = 'decompile';
+        commit('addTask', result);
+      }
+      return result;
     },
     async updateDecomplieTask({
       commit
