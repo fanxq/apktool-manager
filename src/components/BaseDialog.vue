@@ -80,11 +80,11 @@ export default {
 @import '../assets/css/shared.scss';
 dialog {
   border: 1px solid #cccccc;
-  padding: 10px;
+  padding: 0 10px 10px;
   header {
     height: 20px;
     border-bottom: 1px solid #ccc;
-    padding: 5px 10px;
+    padding: 10px;
     line-height: 20px;
     position: relative;
     h3 {
