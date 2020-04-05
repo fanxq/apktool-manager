@@ -1,6 +1,8 @@
 .DS_Store
 node_modules
 /dist
+/build
+/assets
 /decompileFiles
 /apktool
 package-lock.json
