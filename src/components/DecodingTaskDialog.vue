@@ -123,6 +123,11 @@ export default {
         } else {
           task = {name: taskName, apkName: fileName, status: 'pending', log: ''};
           task = await this.addTask(task);
+          if (typeof task === 'string') {
+            let exception = new Error(task);
+            exception.name = 'ValidationError';
+            throw exception;
+          }
         }
         const path = require('path');
         let destDir = require('electron').remote.getGlobal('userDataPath');
@@ -154,6 +159,14 @@ export default {
         task.path = path.join(destDir, apkFileNameWithoutExt);
         this.updateTask(task);
       } catch (error) {
+        if (error && error.name && error.name === 'ValidationError') {
+           this.$msgbox({
+            type: 'error',
+            message: error.message
+          });
+          this.$emit('input', true);
+          return;
+        }
         task.status = 'pause';
         this.updateTask(task);
       }

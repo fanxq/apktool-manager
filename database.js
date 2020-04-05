@@ -20,7 +20,13 @@ DecompileTask.init({
   },
   name: {
     type: Sequelize.STRING,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      len: {
+        args: [1, 50],
+        msg: '任务名称不能超过50个字符!'
+      }
+    }
   },
   apkName: {
     type: Sequelize.STRING,
@@ -71,7 +77,13 @@ BuildTask.init({
   },
   name: {
     type: Sequelize.STRING,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      len: {
+        args: [1, 50],
+        msg: '任务名称不能超过50个字符'
+      }
+    }
   },
   path: {
     type: Sequelize.STRING

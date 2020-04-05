@@ -38,10 +38,19 @@ ipcMain.handle('load-data', async (e, data) => {
 
 ipcMain.handle('add-decompile-task', async (e, data) => {
   try {
+    let findResult = await db.DecompileTask.findOne({
+      where: {
+        name: data.name,
+        deleteSign: 0
+      }
+    });
+    if (findResult) {
+      throw `任务名称：${data.name}已存在，请重新输入！`;
+    }
     let result = await db.DecompileTask.create(data);
     return JSON.parse(JSON.stringify(result));
   } catch (error) {
-    throw error;
+    return typeof error === 'string' ? error : error.message;
   }
 });
 
