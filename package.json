@@ -17,29 +17,28 @@
   },
   "build": {
     "appId": "com.apktool.manager",
-    "productName": "ApktoolManager",
+    "productName": "apktool-manager",
     "directories": {
       "output": "build"
     },
-    "asar": false,
     "files": [
       "dist/**/*",
       "database.js",
-      "ipcMainHandler.js",
+      "ipcMainHandlers.js",
       "main.js",
       "package.json",
       "assets/**/*"
     ],
-    "npmRebuild": false,
     "nsis": {
       "oneClick": false,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Apktool Mananger"
+      "shortcutName": "apktool-manager"
     },
     "win": {
+      "icon": "./assets/icon.ico",
       "target": [
         {
           "target": "nsis"
@@ -68,7 +67,7 @@
     "@vue/cli-plugin-vuex": "^4.1.0",
     "@vue/cli-service": "^4.2.3",
     "babel-plugin-transform-class-properties": "^6.24.1",
-    "electron": "^6.0.0",
+    "electron": "7.1.9",
     "electron-builder": "^22.3.6",
     "node-sass": "^4.12.0",
     "sass-loader": "^8.0.0",
