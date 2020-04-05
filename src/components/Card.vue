@@ -96,7 +96,9 @@ export default {
     .task-name {
       text-align: left;
       flex: 1;
-      word-break: break-all;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       font-size: 22px;
       font-weight: 500;
       color: #555;
@@ -124,6 +126,7 @@ export default {
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 3;
         overflow: hidden;
+        max-width: 100%;
       }
     }
    

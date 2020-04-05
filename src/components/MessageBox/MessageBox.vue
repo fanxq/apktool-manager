@@ -64,6 +64,7 @@ export default {
   }
   .content {
     flex: 1;
+    color: $dark;
   }
 }
 .footer {
