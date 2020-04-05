@@ -75,9 +75,12 @@ export default {
         this.fileName = selectedApkFile[0];
       }
     },
-    onCancel() {
+    resetData() {
       this.taskName = '';
       this.fileName = '';
+    },
+    onCancel() {
+      this.resetData();
     },
     checkInputData() {
       try {
@@ -113,8 +116,8 @@ export default {
         this.$emit('input', false);
         let taskName = this.taskName;
         let fileName = this.fileName;
-        this.taskName = '';
-        this.fileName = '';
+        // this.taskName = '';
+        // this.fileName = '';
         if (pausedTask) {
           task = pausedTask;
           task.log = '';
@@ -129,6 +132,7 @@ export default {
             throw exception;
           }
         }
+        this.resetData();
         const path = require('path');
         let destDir = require('electron').remote.getGlobal('userDataPath');
         destDir = path.join(destDir, uuidv4());

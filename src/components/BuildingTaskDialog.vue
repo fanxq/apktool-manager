@@ -231,8 +231,11 @@ export default {
     onDialogVisibleChanged(value) {
       this.$emit('input', value);
     },
-    onCancel() {
+    resetData() {
       this.taskName = '';
+    },
+    onCancel() {
+      this.resetData();
     },
     async resumeTask(task) {
       this.taskName = task.name;
@@ -250,9 +253,13 @@ export default {
         } else {
           task = {decodingTaskId: this.decodingTaskId, name: this.taskName, status: 'pending', log: ''};
           task = await this.addTask(task);
+           if (typeof task === 'string') {
+            let exception = new Error(task);
+            exception.name = 'ValidationError';
+            throw exception;
+          }
         }
-       
-        this.taskName = '';
+        this.resetData();
         await this.runBeforeBuildCmd(task);
         const buildFilesFolder = this.selectedFolder;
         const destDir = path.dirname(this.selectedFolder);
@@ -281,7 +288,14 @@ export default {
           await this.runAfterBuildCmd(task);
         }
       } catch (error) {
-        console.log(error.message);
+         if (error && error.name && error.name === 'ValidationError') {
+           this.$msgbox({
+            type: 'error',
+            message: error.message
+          });
+          this.$emit('input', true);
+          return;
+        }
         task.status = 'pause';
         this.updateTask(task);
       }

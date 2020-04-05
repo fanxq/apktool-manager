@@ -93,8 +93,10 @@ export default new Vuex.Store({
       commit
     }, task) {
       let BuildTask = await ipcRenderer.invoke('add-build-task', task);
-      BuildTask.type = 'build';
-      commit('addTask', BuildTask);
+      if (BuildTask && BuildTask.id) {
+        BuildTask.type = 'build';
+        commit('addTask', BuildTask);
+      }
       return BuildTask;
     },
     async updateBuildTask({

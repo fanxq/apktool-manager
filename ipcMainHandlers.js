@@ -67,10 +67,19 @@ ipcMain.handle('update-decompile-task', async (e, data) => {
 
 ipcMain.handle('add-build-task', async (e, data) => {
   try {
+    let findResult = await db.BuildTask.findOne({
+      where: {
+        name: data.name,
+        deleteSign: 0
+      }
+    });
+    if (findResult) {
+      throw `任务名称：${data.name}已存在，请重新输入！`;
+    }
     let result = await db.BuildTask.create(data);
     return JSON.parse(JSON.stringify(result));
   } catch (error) {
-    return error;
+    return typeof error === 'string' ? error : error.message;
   }
 });
 
