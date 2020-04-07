@@ -11,7 +11,7 @@ require('./ipcMainHandlers');
 const userDataPath = path.join(app.getPath('userData'), 'userData');
 global.userDataPath = userDataPath;
 
-const assetsPath = path.join(__dirname, 'assets');
+const assetsPath = path.resolve(__dirname, '../assets');
 global.assetsPath = assetsPath;
 
 // 保持对window对象的全局引用，如果不这么做的话，当JavaScript对象被
@@ -31,7 +31,7 @@ function createWindow() {
     resizable: false,
     maximizable: false,
     backgroundColor: '#f4f4f4',
-    icon: path.join(__dirname, 'assets', 'icon.ico'),
+    icon: path.resolve(__dirname, '../assets', 'icon.ico'),
     webPreferences: {
       nodeIntegration: true
     }
@@ -47,7 +47,8 @@ function createWindow() {
       mode: 'detach'
     });
   } else {
-    win.loadFile(`${__dirname}/dist/index.html`)
+    //win.loadFile(`${__dirname}/dist/index.html`)
+    win.loadFile(path.resolve(__dirname, '../../dist/index.html'));
   }
 
 
@@ -70,7 +71,7 @@ function createWindow() {
   //   tray.setHighlightMode('never')
   // });
   //创建系统通知区菜单
-  tray = new Tray(path.join(__dirname, 'assets', 'icon.ico'));
+  tray = new Tray(path.resolve(__dirname, '../assets', 'icon.ico'));
   const contextMenu = Menu.buildFromTemplate([{
       label: '退出',
       click: () => {

@@ -4,30 +4,28 @@
   "description": "a management GUI for apktool",
   "author": "fanxq",
   "private": true,
-  "main": "main.js",
+  "main": "./src/main/main.js",
   "type": "module",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "start": "npm run build && electron .",
-    "dev": "set NODE_ENV=development&& electron .",
+    "dev": "set NODE_ENV=development&& electron ./",
     "pack": "npm run build && electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "install": "set ELECTRON_MIRROR=http://npm.taobao.org/mirrors/electron/&&  node ./node_modules/electron/install.js"
   },
   "build": {
     "appId": "com.apktool.manager",
-    "productName": "apktool-manager",
+    "productName": "Apktool Manager",
     "directories": {
       "output": "build"
     },
     "files": [
       "dist/**/*",
-      "database.js",
-      "ipcMainHandlers.js",
-      "main.js",
+      "src/main/**/*",
       "package.json",
-      "assets/**/*"
+      "src/assets/**/*"
     ],
     "nsis": {
       "oneClick": false,
@@ -35,10 +33,10 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "apktool-manager"
+      "shortcutName": "Apktool Manager"
     },
     "win": {
-      "icon": "./assets/icon.ico",
+      "icon": "./src/assets/icon.ico",
       "target": [
         {
           "target": "nsis"

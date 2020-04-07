@@ -151,7 +151,8 @@ export default {
               reject(err);
             }
             console.log(stderr.toString());
-            resolve({stdout, stderr});
+            resolve();
+            //resolve({stdout, stderr});
           });
           cp.stdout.on('data', (data) => {
             task.log = data.toString();
