@@ -152,6 +152,9 @@ ipcMain.handle('delete-build-task', async (e, data) => {
     let task = await db.BuildTask.findByPk(data.id);
     task.deleteSign = 1;
     await new Promise((resolve, reject) => {
+      if (!task.path) {
+        resolve();
+      }
       rimraf(path.dirname(task.path), err => {
         if (err) {
           throw err;
@@ -163,5 +166,24 @@ ipcMain.handle('delete-build-task', async (e, data) => {
     return result;
   } catch (error) {
     return error;
+  }
+});
+
+ipcMain.handle('find-decompile-tasks', async (e, data) => {
+  try {
+    let tasks = await db.DecompileTask.findAll({
+      where:{
+        name: {
+          [db.Op.like]: `%${data}%`
+        },
+        deleteSign: 0
+      },
+      order: [
+        ['createdAt', 'DESC']
+      ]
+    });
+    return JSON.parse(JSON.stringify(tasks));
+  } catch (error) {
+    return error.message;
   }
 });

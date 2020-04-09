@@ -6,7 +6,7 @@
         <span>
           <font-awesome-icon :icon="faSearch"></font-awesome-icon>
         </span>
-        <input type="text" placeholder="搜索...">
+        <input type="text" placeholder="搜索..." @keyup.enter="onSearch" v-model="taskName">
       </div>
     </div>
     <div class="content">
@@ -24,6 +24,7 @@
   </div>
 </template>
 <script>
+import { ipcRenderer } from 'electron';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { mapState } from 'vuex';
 import DecodingTaskDialog from '../components/DecodingTaskDialog';
@@ -38,7 +39,8 @@ export default {
   data() {
     return {
       isShowDialog: false,
-      faSearch
+      faSearch,
+      taskName: ''
     }
   },
   computed: {
@@ -53,6 +55,15 @@ export default {
     openExternal() {
       const {shell} = require('electron');
       shell.openExternal('https://ibotpeaches.github.io/Apktool/');
+    },
+    onSearch() {
+      if (this.taskName && this.taskName.trim()) {
+        ipcRenderer.invoke('find-decompile-tasks', (result) => {
+          if (result) {
+            this.tasks.splice(0, this.tasks.length, ...result);
+          }
+        });
+      }
     }
   }
 }

@@ -116,7 +116,10 @@ BuildTask.init({
   sequelize,
   tableName: 'build_tasks',
 });
+
+const Op = Sequelize.Op;
 module.exports = {
+  Op,
   sequelize,
   DecompileTask,
   BuildTask
