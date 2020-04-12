@@ -4,6 +4,7 @@ const {
 const db = require('./database');
 const rimraf = require('rimraf');
 const path = require('path');
+const dayjs = require('dayjs');
 
 ipcMain.handle('load-data', async (e, data) => {
   try {
@@ -171,17 +172,29 @@ ipcMain.handle('delete-build-task', async (e, data) => {
 
 ipcMain.handle('find-decompile-tasks', async (e, data) => {
   try {
-    let tasks = await db.DecompileTask.findAll({
-      where:{
-        name: {
-          [db.Op.like]: `%${data}%`
+    let tasks;
+    if (data) {
+      data = data.toLowerCase();
+      tasks = await db.sequelize.query(`select * from decompile_tasks where LOWER(name) like '%${data}%' and deleteSign = 0 order by createdAt DESC`, {
+        type: db.sequelize.QueryTypes.SELECT
+      });
+      if (tasks && tasks.length !== 0) {
+        tasks.forEach(x => {
+          x.createdAt = dayjs(x.createdAt).format('YYYY-MM-DD HH:mm:ss');
+          x.updatedAt = dayjs(x.updatedAt).format('YYYY-MM-DD HH:mm:ss');
+        })
+      }
+    } else {
+      tasks = await db.DecompileTask.findAll({
+        where: {
+          deleteSign: 0
         },
-        deleteSign: 0
-      },
-      order: [
-        ['createdAt', 'DESC']
-      ]
-    });
+        order: [
+          ['createdAt', 'DESC']
+        ]
+      });
+    }
+
     return JSON.parse(JSON.stringify(tasks));
   } catch (error) {
     return error.message;

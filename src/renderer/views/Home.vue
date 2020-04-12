@@ -56,13 +56,10 @@ export default {
       const {shell} = require('electron');
       shell.openExternal('https://ibotpeaches.github.io/Apktool/');
     },
-    onSearch() {
-      if (this.taskName && this.taskName.trim()) {
-        ipcRenderer.invoke('find-decompile-tasks', (result) => {
-          if (result) {
-            this.tasks.splice(0, this.tasks.length, ...result);
-          }
-        });
+    async onSearch() {
+      let result = await ipcRenderer.invoke('find-decompile-tasks', this.taskName);
+      if (result) {
+        this.tasks.splice(0, this.tasks.length, ...result);
       }
     }
   }
