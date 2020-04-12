@@ -87,8 +87,8 @@ export default {
 .card {
   background-color: #fff;
   border: 1px solid #f4f4f4;
-  padding: 10px;
-  height: 120px;
+  padding: 15px;
+  // height: 120px;
   position: relative;
   margin-bottom: 10px;
  
@@ -103,7 +103,9 @@ export default {
       font-weight: 500;
       color: #555;
     }
+    
     .log {
+      width: 100%;
       text-align: left;
       color: #888;
        .tips {
@@ -120,13 +122,21 @@ export default {
         }
       }
       p {
+        height: 65px;
+        max-width: 100%;
         white-space: pre-wrap;
         margin: 0;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 3;
-        overflow: hidden;
-        max-width: 100%;
+        overflow: auto;
+        &::-webkit-scrollbar{
+          width: 4px;
+          height: 4px;
+        }
+        &::-webkit-scrollbar-thumb {
+          background-color: #4f4f4f65;
+        }
+        &::-webkit-scrollbar-track{
+          background-color: transparent;
+        }
       }
     }
    
