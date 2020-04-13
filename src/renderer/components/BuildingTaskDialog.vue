@@ -242,7 +242,6 @@ export default {
       await this.onOK(task);
     },
     async onOK(pausedTask) {
-      this.$emit('input', false);
       let task = null;
       try {
         if (pausedTask) {
@@ -259,6 +258,7 @@ export default {
             throw exception;
           }
         }
+        this.$emit('input', false);
         this.resetData();
         await this.runBeforeBuildCmd(task);
         const buildFilesFolder = this.selectedFolder;
@@ -293,7 +293,6 @@ export default {
             type: 'error',
             message: error.message
           });
-          this.$emit('input', true);
           return;
         }
         task.status = 'pause';

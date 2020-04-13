@@ -71,6 +71,7 @@ ipcMain.handle('add-build-task', async (e, data) => {
     let findResult = await db.BuildTask.findOne({
       where: {
         name: data.name,
+        decodingTaskId: data.decodingTaskId,
         deleteSign: 0
       }
     });
