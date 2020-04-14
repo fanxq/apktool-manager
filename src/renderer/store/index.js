@@ -110,16 +110,18 @@ export default new Vuex.Store({
     async deleteTask({
       commit
     }, task) {
-      commit('deleteTask', task);
-      let result = null;
       if (task.type === 'build') {
-        result = await ipcRenderer.invoke('delete-build-task', task);
+        let {error} = await ipcRenderer.invoke('delete-build-task', task);
+        if (error) {
+          throw error;
+        }
       } else {
-        result = await ipcRenderer.invoke('delete-decompile-task', task);
+        let {error} = await ipcRenderer.invoke('delete-decompile-task', task);
+        if (error) {
+          throw error;
+        }
       }
-      if (result instanceof Error) {
-        commit('addTask', task);
-      }
+      commit('deleteTask', task);
     }
   },
   modules: {}

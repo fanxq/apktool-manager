@@ -6,6 +6,13 @@ const rimraf = require('rimraf');
 const path = require('path');
 const dayjs = require('dayjs');
 
+class IpcResponse{
+  constructor(err, data = null) {
+    this.error = err;
+    this.data = data;
+  }
+}
+
 ipcMain.handle('load-data', async (e, data) => {
   try {
     await db.sequelize.sync();
@@ -110,6 +117,7 @@ ipcMain.handle('get-build-tasks-by-pid', async (e, pid) => {
 });
 
 ipcMain.handle('delete-decompile-task', async (e, data) => {
+  let response;
   const t = await db.sequelize.transaction();
   try {
     let task = await db.DecompileTask.findByPk(data.id);
@@ -142,14 +150,16 @@ ipcMain.handle('delete-decompile-task', async (e, data) => {
     });
 
     await t.commit();
-    return result;
+    response = new IpcResponse(null, result);
   } catch (error) {
     await t.rollback();
-    return error;
+    response = new IpcResponse(error);
   }
+  return response;
 });
 
 ipcMain.handle('delete-build-task', async (e, data) => {
+  let response;
   try {
     let task = await db.BuildTask.findByPk(data.id);
     task.deleteSign = 1;
@@ -165,10 +175,12 @@ ipcMain.handle('delete-build-task', async (e, data) => {
       });
     })
     let result = await task.save();
+    response = new IpcResponse(null, result);
     return result;
   } catch (error) {
-    return error;
+    response = new IpcResponse(error);
   }
+  return response;
 });
 
 ipcMain.handle('find-decompile-tasks', async (e, data) => {

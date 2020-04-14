@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="card" :class="{'delete-task-effect': isDeleting}">
     <div class="content">
       <div class="row">
         <div class="task-name">{{name}}</div>
@@ -51,7 +51,8 @@ export default {
       faTrashAlt,
       faFolderOpen,
       faList,
-      faPlayCircle
+      faPlayCircle,
+      isDeleting: false
     }
   },
   methods: {
@@ -65,8 +66,18 @@ export default {
     gotoPackageManagementPage() {
       this.$router.push(`/packageManagement/${this.id}`);
     },
-    deleteTask() {
-      this._deleteTask({id: this.id, type: this.type});
+    async deleteTask() {
+      this.isDeleting = true;
+      try {
+        await this._deleteTask({id: this.id, type: this.type});
+      } catch(err) {
+        this.$msgbox({
+          type: 'error',
+          message: error.message
+        });
+      }
+      
+      this.isDeleting = false;
     },
     resumeTask() {
        let task;
@@ -83,15 +94,53 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
- 
+ @keyframes move {
+    from {
+        width: 0px;
+    }
+    20% {
+        width: 20%;
+    }
+    50% {
+        width: 50%;
+    }
+    80% {
+        width: 80%;
+    }
+    to {
+        width: 100%;
+    }
+ }
 .card {
   background-color: #fff;
   border: 1px solid #f4f4f4;
   padding: 15px;
-  // height: 120px;
   position: relative;
   margin-bottom: 10px;
- 
+  &.delete-task-effect {
+    position: relative;
+    &::before {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      content: '删除中...';
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    &::after {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(to right, transparent, #2fbd2f7a);
+      animation: 4s ease-out 0s infinite move;
+    }
+  }
   .content {
     .task-name {
       text-align: left;
