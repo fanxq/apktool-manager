@@ -94,6 +94,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import '../assets/css/shared.scss';
  @keyframes move {
     from {
         width: 0px;
@@ -130,15 +131,18 @@ export default {
       display: flex;
       justify-content: center;
       align-items: center;
+      z-index: 3;
     }
     &::after {
       position: absolute;
+      content: '';
       left: 0;
       top: 0;
       width: 0;
       height: 100%;
-      background: linear-gradient(to right, transparent, #2fbd2f7a);
-      animation: 4s ease-out 0s infinite move;
+      background: linear-gradient(to right, transparent, rgba($color: $default-color, $alpha: 0.65));
+      animation: move 4s ease-out 0s infinite;
+      z-index: 5;
     }
   }
   .content {
