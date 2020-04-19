@@ -6,118 +6,77 @@ const rimraf = require('rimraf');
 const path = require('path');
 const dayjs = require('dayjs');
 
-class IpcResponse{
-  constructor(err, data = null) {
-    this.error = err;
-    this.data = data;
-  }
-}
-
 ipcMain.handle('load-data', async (e, data) => {
-  try {
-    await db.sequelize.sync();
-    let result = await Promise.all([
-      db.DecompileTask.findAll({
-        where: {
-          deleteSign: 0
-        },
-        order: [
-          ['createdAt', 'DESC']
-        ]
-      }),
-      db.BuildTask.findAll({
-        where: {
-          deleteSign: 0
-        },
-        order: [
-          ['createdAt', 'DESC']
-        ]
-      })
-    ]);
-    console.log(JSON.stringify(result));
-    return {
-      decompileTask: JSON.parse(JSON.stringify(result[0])),
-      buildTask: JSON.parse(JSON.stringify(result[1]))
-    }
-  } catch (error) {
-    return error;
-  }
+  await db.sequelize.sync();
+  let result = await Promise.all([
+    db.DecompileTask.findAll({
+      where: {
+        deleteSign: 0
+      },
+      order: [
+        ['createdAt', 'DESC']
+      ]
+    }),
+    db.BuildTask.findAll({
+      where: {
+        deleteSign: 0
+      },
+      order: [
+        ['createdAt', 'DESC']
+      ]
+    })
+  ]);
+  // console.log(JSON.stringify(result));
+  return {
+    decompileTask: JSON.parse(JSON.stringify(result[0])),
+    buildTask: JSON.parse(JSON.stringify(result[1]))
+  };
 });
 
 ipcMain.handle('add-decompile-task', async (e, data) => {
-  try {
-    let findResult = await db.DecompileTask.findOne({
-      where: {
-        name: data.name,
-        deleteSign: 0
-      }
-    });
-    if (findResult) {
-      throw `任务名称：${data.name}已存在，请重新输入！`;
+  let findResult = await db.DecompileTask.findOne({
+    where: {
+      name: data.name,
+      deleteSign: 0
     }
-    let result = await db.DecompileTask.create(data);
-    return JSON.parse(JSON.stringify(result));
-  } catch (error) {
-    return typeof error === 'string' ? error : error.message;
+  });
+  if (findResult) {
+    throw new Error(`任务名称：${data.name}已存在，请重新输入！`);
   }
+  let result = await db.DecompileTask.create(data);
+  return JSON.parse(JSON.stringify(result));
 });
 
 ipcMain.handle('update-decompile-task', async (e, data) => {
-  try {
-    let task = await db.DecompileTask.findByPk(data.id);
-    Object.assign(task, data);
-    let result = await task.save();
-    return JSON.parse(JSON.stringify(result));
-  } catch (error) {
-    return error;
-  }
+  let task = await db.DecompileTask.findByPk(data.id);
+  Object.assign(task, data);
+  let result = await task.save();
+  return JSON.parse(JSON.stringify(result));
 });
 
 ipcMain.handle('add-build-task', async (e, data) => {
-  try {
-    let findResult = await db.BuildTask.findOne({
-      where: {
-        name: data.name,
-        decodingTaskId: data.decodingTaskId,
-        deleteSign: 0
-      }
-    });
-    if (findResult) {
-      throw `任务名称：${data.name}已存在，请重新输入！`;
+  let findResult = await db.BuildTask.findOne({
+    where: {
+      name: data.name,
+      decodingTaskId: data.decodingTaskId,
+      deleteSign: 0
     }
-    let result = await db.BuildTask.create(data);
-    return JSON.parse(JSON.stringify(result));
-  } catch (error) {
-    return typeof error === 'string' ? error : error.message;
+  });
+  if (findResult) {
+    throw `任务名称：${data.name}已存在，请重新输入！`;
   }
+  let result = await db.BuildTask.create(data);
+  return JSON.parse(JSON.stringify(result));
 });
 
 ipcMain.handle('update-build-task', async (e, data) => {
-  try {
-    let task = await db.BuildTask.findByPk(data.id);
-    Object.assign(task, data);
-    let result = await task.save();
-    return JSON.parse(JSON.stringify(result));
-  } catch (error) {
-    return error;
-  }
-});
-
-ipcMain.handle('get-build-tasks-by-pid', async (e, pid) => {
-  try {
-    let tasks = await db.BuildTask.findAll({
-      where: {
-        decodingTaskId: Number(pid)
-      }
-    });
-    return JSON.parse(JSON.stringify(tasks));
-  } catch (error) {
-    return error;
-  }
+  let task = await db.BuildTask.findByPk(data.id);
+  Object.assign(task, data);
+  let result = await task.save();
+  return JSON.parse(JSON.stringify(result));
 });
 
 ipcMain.handle('delete-decompile-task', async (e, data) => {
-  let response;
   const t = await db.sequelize.transaction();
   try {
     let task = await db.DecompileTask.findByPk(data.id);
@@ -150,66 +109,54 @@ ipcMain.handle('delete-decompile-task', async (e, data) => {
     });
 
     await t.commit();
-    response = new IpcResponse(null, result);
+    return result;
   } catch (error) {
     await t.rollback();
-    response = new IpcResponse(error);
+    throw error;
   }
-  return response;
 });
 
 ipcMain.handle('delete-build-task', async (e, data) => {
-  let response;
-  try {
-    let task = await db.BuildTask.findByPk(data.id);
-    task.deleteSign = 1;
-    await new Promise((resolve, reject) => {
-      if (!task.path) {
-        resolve();
+  let task = await db.BuildTask.findByPk(data.id);
+  task.deleteSign = 1;
+  await new Promise((resolve, reject) => {
+    if (!task.path) {
+      resolve();
+    }
+    rimraf(path.dirname(task.path), err => {
+      if (err) {
+        throw err;
       }
-      rimraf(path.dirname(task.path), err => {
-        if (err) {
-          throw err;
-        }
-        resolve();
-      });
-    })
-    let result = await task.save();
-    response = new IpcResponse(null, result);
-    return result;
-  } catch (error) {
-    response = new IpcResponse(error);
-  }
-  return response;
+      resolve();
+    });
+  })
+  let result = await task.save();
+  return result;
 });
 
 ipcMain.handle('find-decompile-tasks', async (e, data) => {
-  try {
-    let tasks;
-    if (data) {
-      data = data.toLowerCase();
-      tasks = await db.sequelize.query(`select * from decompile_tasks where LOWER(name) like '%${data}%' and deleteSign = 0 order by createdAt DESC`, {
-        type: db.sequelize.QueryTypes.SELECT
-      });
-      if (tasks && tasks.length !== 0) {
-        tasks.forEach(x => {
-          x.createdAt = dayjs(x.createdAt).format('YYYY-MM-DD HH:mm:ss');
-          x.updatedAt = dayjs(x.updatedAt).format('YYYY-MM-DD HH:mm:ss');
-        })
-      }
-    } else {
-      tasks = await db.DecompileTask.findAll({
-        where: {
-          deleteSign: 0
-        },
-        order: [
-          ['createdAt', 'DESC']
-        ]
-      });
+  let tasks;
+  if (data) {
+    data = data.toLowerCase();
+    tasks = await db.sequelize.query(`select * from decompile_tasks where LOWER(name) like '%${data}%' and deleteSign = 0 order by createdAt DESC`, {
+      type: db.sequelize.QueryTypes.SELECT
+    });
+    if (tasks && tasks.length !== 0) {
+      tasks.forEach(x => {
+        x.createdAt = dayjs(x.createdAt).format('YYYY-MM-DD HH:mm:ss');
+        x.updatedAt = dayjs(x.updatedAt).format('YYYY-MM-DD HH:mm:ss');
+      })
     }
-
-    return JSON.parse(JSON.stringify(tasks));
-  } catch (error) {
-    return error.message;
+  } else {
+    tasks = await db.DecompileTask.findAll({
+      where: {
+        deleteSign: 0
+      },
+      order: [
+        ['createdAt', 'DESC']
+      ]
+    });
   }
+
+  return JSON.parse(JSON.stringify(tasks));
 });

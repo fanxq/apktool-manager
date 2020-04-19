@@ -24,13 +24,13 @@
   </base-dialog>
 </template>
 <script>
+import decodingTaskIpc from '../mixins/decodingTaskIpc';
 import eventBus from '../utility/eventBus';
 import { mapActions, mapMutations } from 'vuex';
 import BaseDialog from '../components/BaseDialog';
 import { v4 as uuidv4 } from 'uuid';
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 const { dialog } = require('electron').remote;
-const { ipcRenderer } = require('electron');
 const fs = require('fs');
 const childProcess = require('child_process');
 const fsPromises = fs.promises;
@@ -38,6 +38,7 @@ export default {
    components: {
     'base-dialog': BaseDialog
   },
+  mixins: [decodingTaskIpc],
   props: {
     value: {
       type: Boolean,
@@ -53,11 +54,7 @@ export default {
   },
   methods: {
     ...mapMutations({
-      updateTaskInStore: 'updateTask'
-    }),
-    ...mapActions({
-      addTask: 'addDecompileTask',
-      updateTask: 'updateDecomplieTask'
+      updateTaskInStore: 'updateTask',
     }),
     onDialogVisibleChanged(value) {
       this.$emit('input', value);
@@ -113,25 +110,20 @@ export default {
         if (!this.checkInputData()) {
           return;
         }
-        this.$emit('input', false);
+        
         let taskName = this.taskName;
         let fileName = this.fileName;
-        // this.taskName = '';
-        // this.fileName = '';
         if (pausedTask) {
           task = pausedTask;
           task.log = '';
           task.status = 'pending';
-          task = await this.updateTask(task);
+          task = await this.updateTaskInDB(task);
         } else {
           task = {name: taskName, apkName: fileName, status: 'pending', log: ''};
-          task = await this.addTask(task);
-          if (typeof task === 'string') {
-            let exception = new Error(task);
-            exception.name = 'ValidationError';
-            throw exception;
-          }
+          //task = await this.addTask(task);
+          task = await this.saveTaskToDB(task);
         }
+        this.$emit('input', false);
         this.resetData();
         const path = require('path');
         let destDir = require('electron').remote.getGlobal('userDataPath');
@@ -162,18 +154,19 @@ export default {
         await fsPromises.unlink(path.join(destDir, apkFileName));
         task.status = 'done';
         task.path = path.join(destDir, apkFileNameWithoutExt);
-        this.updateTask(task);
+        await this.updateTaskInDB(task);
+        this.sendTaskDoneToIpcMain();
       } catch (error) {
-        if (error && error.name && error.name === 'ValidationError') {
+        console.log(error);
+        if (!task.id) {
            this.$msgbox({
             type: 'error',
-            message: error.message
+            message: typeof error === 'string' ? error : error.message
           });
-          this.$emit('input', true);
           return;
         }
         task.status = 'pause';
-        this.updateTask(task);
+        this.updateTaskInDB(task);
       }
     }
   },

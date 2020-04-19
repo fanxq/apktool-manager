@@ -27,10 +27,10 @@
   </base-dialog>
 </template>
 <script>
-import { mapActions, mapMutations, mapState } from 'vuex';
+import { mapMutations, mapState } from 'vuex';
+import buildingTaskIpc from '../mixins/buildingTaskIpc';
 import eventBus from '../utility/eventBus';
 import BaseDialog from '../components/BaseDialog';
-import { ipcRenderer } from 'electron';
 import { v4 as uuidv4 } from 'uuid'
 const { dialog } = require('electron').remote;
 const fs = require('fs');
@@ -42,6 +42,7 @@ export default {
    components: {
     'base-dialog': BaseDialog
   },
+  mixins: [buildingTaskIpc],
   props: {
     value: {
       type: Boolean,
@@ -93,10 +94,6 @@ export default {
   methods: {
     ...mapMutations({
       updateTaskInStore: 'updateTask'
-    }),
-    ...mapActions({
-      addTask: 'addBuildTask',
-      updateTask: 'updateBuildTask'
     }),
     async copySignFiles(destDir) {
       if (!fs.existsSync(destDir)) {
@@ -248,15 +245,10 @@ export default {
           task = pausedTask;
           task.status = 'pending';
           task.log = '';
-          task = await this.updateTask(task);
+          task = await this.updateTaskInDB(task);
         } else {
           task = {decodingTaskId: this.decodingTaskId, name: this.taskName, status: 'pending', log: ''};
-          task = await this.addTask(task);
-           if (typeof task === 'string') {
-            let exception = new Error(task);
-            exception.name = 'ValidationError';
-            throw exception;
-          }
+          task = await this.saveTaskToDB(task);
         }
         this.$emit('input', false);
         this.resetData();
@@ -284,19 +276,20 @@ export default {
           
           task.status = 'done';
           task.path = path.join(outputPath, `${buildFilesPath}.apk`);
-          this.updateTask(task);
+          this.updateTaskInDB(task);
           await this.runAfterBuildCmd(task);
+          this.sendTaskDoneToIpcMain();
         }
       } catch (error) {
-         if (error && error.name && error.name === 'ValidationError') {
+         if (!task.id) {
            this.$msgbox({
             type: 'error',
-            message: error.message
+            message: typeof error === 'string'? error: error.message
           });
           return;
         }
         task.status = 'pause';
-        this.updateTask(task);
+        this.updateTaskInDB(task);
       }
     }
   },

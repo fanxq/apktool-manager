@@ -42,7 +42,7 @@
 </template>
 <script>
 import eventBus from '../utility/eventBus';
-import { mapActions } from 'vuex';
+import { ipcRenderer } from 'electron';
 import { faTrashAlt, faFolderOpen, faList, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 export default {
   props:['name', 'status', 'createdAt', 'path', 'id', 'type', 'log'],
@@ -56,9 +56,6 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      _deleteTask: 'deleteTask'
-    }),
     showInFolder() {
       const shell = require('electron').shell;
       shell.showItemInFolder(this.path);
@@ -69,11 +66,17 @@ export default {
     async deleteTask() {
       this.isDeleting = true;
       try {
-        await this._deleteTask({id: this.id, type: this.type});
+        let task = {id: this.id, type: this.type};
+        if (this.type === 'build') {
+          await ipcRenderer.invoke('delete-build-task', task);
+        } else {
+          await ipcRenderer.invoke('delete-decompile-task', task);
+        }
+        this.$store.commit('deleteTask', task);
       } catch(err) {
         this.$msgbox({
           type: 'error',
-          message: error.message
+          message: typeof err === 'string' ? err : err.message
         });
       }
       
@@ -116,6 +119,7 @@ export default {
   background-color: #fff;
   border: 1px solid #f4f4f4;
   padding: 15px;
+  min-height: 110px;
   position: relative;
   margin-bottom: 10px;
   &.delete-task-effect {
@@ -141,7 +145,7 @@ export default {
       width: 0;
       height: 100%;
       background: linear-gradient(to right, transparent, rgba($color: $default-color, $alpha: 0.65));
-      animation: move 4s ease-out 0s infinite;
+      animation: move 4s linear 0s infinite;
       z-index: 5;
     }
   }

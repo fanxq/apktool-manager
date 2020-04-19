@@ -1,5 +1,5 @@
 <template>
-  <base-dialog v-model="isShow">
+  <base-dialog v-model="isShow" style="max-width: 50%;">
     <section class="dialog-content">
       <font-awesome-icon 
         class="icon"

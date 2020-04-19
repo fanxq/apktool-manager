@@ -2,7 +2,8 @@ const {
   app,
   BrowserWindow,
   Tray,
-  Menu
+  Menu,
+  ipcMain
 } = require('electron')
 const fs = require('fs');
 const path = require('path');
@@ -19,6 +20,12 @@ global.assetsPath = assetsPath;
 let win
 let tray = null;
 const gotTheLock = app.requestSingleInstanceLock();
+
+ipcMain.on('task-has-done', (event, args) => {
+  if (win) {
+    win.flashFrame(true);
+  }
+});
 
 function createWindow() {
   if (!fs.existsSync(userDataPath)) {
@@ -63,25 +70,21 @@ function createWindow() {
     event.preventDefault();
   });
 
-  // win.on('show', () => {
-  //   tray.setHighlightMode('always')
-  // });
 
-  // win.on('hide', () => {
-  //   tray.setHighlightMode('never')
-  // });
-  //创建系统通知区菜单
+  win.on('focus', () => {
+    win.flashFrame(false);
+  });
+
   tray = new Tray(path.resolve(__dirname, '../assets', 'icon.ico'));
   const contextMenu = Menu.buildFromTemplate([{
-      label: '退出',
-      click: () => {
-        win.destroy();
-      }
-    }, //我们需要在这里有一个真正的退出（这里直接强制退出）
-  ])
+    label: '退出',
+    click: () => {
+      win.destroy();
+    }
+  }, ])
   tray.setToolTip('Apktool Manager');
   tray.setContextMenu(contextMenu);
-  tray.on('click', () => { //我们这里模拟桌面程序点击通知区图标实现打开关闭应用的功能
+  tray.on('click', () => {
     win.isVisible() ? win.hide() : win.show()
     win.isVisible() ? win.setSkipTaskbar(false) : win.setSkipTaskbar(true);
   })
@@ -112,5 +115,3 @@ if (!gotTheLock) {
     }
   });
 }
-
-

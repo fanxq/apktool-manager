@@ -37,9 +37,12 @@ new Vue({
           }
           return t;
         });
-      } else {
-        alert(result);
       }
+    }).catch(err => {
+      this.$msgbox({
+        type: 'error',
+        message: typeof err === 'string' ? err : err.message
+      });
     });
   }
 }).$mount('#app')
