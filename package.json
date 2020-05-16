@@ -10,10 +10,10 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "start": "npm run build && electron .",
-    "dev": "set NODE_ENV=development&& electron ./",
+    "dev": "cross-env NODE_ENV=development electron ./",
     "pack": "npm run build && electron-builder",
     "postinstall": "electron-builder install-app-deps",
-    "install": "set ELECTRON_MIRROR=http://npm.taobao.org/mirrors/electron/&&  node ./node_modules/electron/install.js"
+    "install": "cross-env ELECTRON_MIRROR=http://npm.taobao.org/mirrors/electron/ node ./node_modules/electron/install.js"
   },
   "build": {
     "appId": "com.apktool.manager",
@@ -65,6 +65,7 @@
     "@vue/cli-plugin-vuex": "^4.1.0",
     "@vue/cli-service": "^4.2.3",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "cross-env": "^7.0.2",
     "electron": "7.1.9",
     "electron-builder": "^22.3.6",
     "node-sass": "^4.12.0",
